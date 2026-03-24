@@ -1,0 +1,226 @@
+<Window x:Class="SshManager.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:SshManager.Views"
+        xmlns:vm="clr-namespace:SshManager.ViewModels"
+        Title="SSH Manager"
+        Height="700" Width="1100"
+        MinHeight="400" MinWidth="600"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <!-- Terminal tabs automatically use TerminalTabView -->
+        <DataTemplate DataType="{x:Type vm:TerminalTabViewModel}">
+            <views:TerminalTabView />
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="260" MinWidth="180"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ==================== Left Panel: Session List ==================== -->
+        <DockPanel Grid.Column="0" Margin="4">
+
+            <!-- Buttons at bottom -->
+            <Grid DockPanel.Dock="Bottom" Margin="0,4,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <Button Grid.Row="0" Grid.Column="0" Content="Connect" Margin="0,0,2,2"
+                        Padding="8,6" Command="{Binding ConnectCommand}"/>
+                <Button Grid.Row="0" Grid.Column="1" Content="Open in PS" Margin="2,0,0,2"
+                        Padding="8,6" Command="{Binding OpenInPowerShellCommand}"
+                        ToolTip="Open session in an external PowerShell window"/>
+                <Button Grid.Row="1" Grid.Column="0" Content="Add" Margin="0,2,2,2"
+                        Padding="8,6" Click="AddSession_Click"/>
+                <Button Grid.Row="1" Grid.Column="1" Content="Edit" Margin="2,2,0,2"
+                        Padding="8,6" Click="EditSession_Click"/>
+                <Button Grid.Row="2" Grid.ColumnSpan="2" Content="Delete" Margin="0,2,0,2"
+                        Padding="8,6" Command="{Binding DeleteSessionCommand}"/>
+
+                <Separator Grid.Row="3" Grid.ColumnSpan="2" Margin="0,2"/>
+
+                <Button Grid.Row="4" Grid.Column="0" Content="Commands" Margin="0,2,2,2"
+                        Padding="8,6" Click="Commands_Click"
+                        ToolTip="Manage and run saved commands"/>
+                <Button Grid.Row="4" Grid.Column="1" Content="Import/Export" Margin="2,2,0,2"
+                        Padding="8,6" Click="ImportExport_Click"
+                        ToolTip="Import or export sessions and commands"/>
+                <Button Grid.Row="5" Grid.ColumnSpan="2" Content="Settings" Margin="0,2,0,0"
+                        Padding="8,6" Click="Settings_Click"/>
+            </Grid>
+
+            <!-- Search box with placeholder text -->
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,4">
+                <TextBox x:Name="SearchBox" Padding="6"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         VerticalContentAlignment="Center"/>
+
+                <TextBlock Text="&#x1F50D; Search sessions..." IsHitTestVisible="False"
+                           Foreground="Gray" Padding="8,6,0,6"
+                           VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+
+            <!-- Session list -->
+            <ListBox ItemsSource="{Binding FilteredSessions}"
+                     SelectedItem="{Binding SelectedSession}"
+                     MouseDoubleClick="SessionList_MouseDoubleClick"
+                     HorizontalContentAlignment="Stretch"
+                     BorderThickness="1" BorderBrush="#CCCCCC">
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Connect (built-in)" Command="{Binding ConnectCommand}"/>
+                        <MenuItem Header="Open in PowerShell" Command="{Binding OpenInPowerShellCommand}"/>
+                        <Separator/>
+                        <MenuItem Header="Edit" Click="EditSession_Click"/>
+                        <MenuItem Header="Delete" Command="{Binding DeleteSessionCommand}"/>
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="4">
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBlock FontSize="11" Opacity="0.6">
+                                <Run Text="{Binding Username, Mode=OneWay}"/><Run Text="@"/><Run Text="{Binding Host, Mode=OneWay}"/><Run Text=":"/><Run Text="{Binding Port, Mode=OneWay}"/>
+                            </TextBlock>
+                            <TextBlock Text="{Binding Group}" FontSize="10" Opacity="0.4">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Group}" Value="">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Group}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <!-- Splitter -->
+        <GridSplitter Grid.Column="1" Width="3"
+                      HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                      Background="#CCCCCC"/>
+
+        <!-- ==================== Right Panel: Tabs ==================== -->
+        <Grid Grid.Column="2">
+
+            <!-- Empty state message -->
+            <TextBlock Text="Select a session and click Connect, or double-click a session."
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="Gray" FontSize="14" TextWrapping="Wrap" Margin="20">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding OpenTabs.Count}" Value="0">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <!-- Tab control for open connections (cached: keeps each terminal alive) -->
+            <views:CachedTabControl ItemsSource="{Binding OpenTabs}"
+                                    SelectedItem="{Binding SelectedTab}"
+                                    Margin="4">
+                <views:CachedTabControl.Style>
+                    <Style TargetType="views:CachedTabControl">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="views:CachedTabControl">
+                                    <Grid KeyboardNavigation.TabNavigation="Local">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <TabPanel Grid.Row="0" IsItemsHost="True" Background="Transparent"/>
+                                        <Border Grid.Row="1"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}">
+                                            <Grid x:Name="PART_ItemsHolder"/>
+                                        </Border>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding OpenTabs.Count}" Value="0">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </views:CachedTabControl.Style>
+
+                <!-- Middle-click to close tab -->
+                <views:CachedTabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem">
+                        <EventSetter Event="PreviewMouseDown" Handler="TabItem_PreviewMouseDown"/>
+                    </Style>
+                </views:CachedTabControl.ItemContainerStyle>
+
+                <!-- Tab header template -->
+                <views:CachedTabControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Margin="2">
+                            <Ellipse Width="8" Height="8" Margin="0,0,6,0">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="Gray"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                <Setter Property="Fill" Value="#2ECC40"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <TextBlock Text="{Binding TabTitle}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <Button Content="&#x2715;" FontSize="9" Padding="3,1"
+                                    Background="Transparent" BorderThickness="0"
+                                    VerticalAlignment="Center" Cursor="Hand"
+                                    Command="{Binding DataContext.CloseTabCommand,
+                                        RelativeSource={RelativeSource AncestorType=views:CachedTabControl}}"
+                                    CommandParameter="{Binding}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </views:CachedTabControl.ItemTemplate>
+            </views:CachedTabControl>
+        </Grid>
+    </Grid>
+</Window>

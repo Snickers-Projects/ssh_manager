@@ -1,0 +1,102 @@
+<Window x:Class="SshManager.Views.SettingsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings"
+        Width="460" Height="500"
+        MinWidth="400" MinHeight="420"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Window -->
+        <GroupBox Grid.Row="0" Header="Window" Padding="8" Margin="0,0,0,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Starting size:" VerticalAlignment="Center"/>
+                <TextBox x:Name="WindowWidthBox" Grid.Column="1" Padding="4"
+                         VerticalContentAlignment="Center"/>
+                <TextBlock Grid.Column="2" Text=" x " VerticalAlignment="Center"/>
+                <TextBox x:Name="WindowHeightBox" Grid.Column="3" Padding="4"
+                         VerticalContentAlignment="Center"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- Terminal -->
+        <GroupBox Grid.Row="1" Header="Terminal" Padding="8" Margin="0,0,0,8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Font size:" VerticalAlignment="Center" Margin="0,0,0,6"/>
+                <TextBox x:Name="FontSizeBox" Grid.Row="0" Grid.Column="1" Padding="4" Margin="0,0,0,6"
+                         Width="80" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Scrollback lines:" VerticalAlignment="Center"/>
+                <TextBox x:Name="ScrollbackBox" Grid.Row="1" Grid.Column="1" Padding="4"
+                         Width="80" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- SSH Defaults -->
+        <GroupBox Grid.Row="2" Header="SSH Defaults" Padding="8" Margin="0,0,0,8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Default port:" VerticalAlignment="Center" Margin="0,0,0,6"/>
+                <TextBox x:Name="DefaultPortBox" Grid.Row="0" Grid.Column="1" Padding="4" Margin="0,0,0,6"
+                         Width="80" HorizontalAlignment="Left" VerticalContentAlignment="Center"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Default username:" VerticalAlignment="Center" Margin="0,0,0,6"/>
+                <TextBox x:Name="DefaultUsernameBox" Grid.Row="1" Grid.Column="1" Padding="4" Margin="0,0,0,6"
+                         VerticalContentAlignment="Center"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Connection timeout:" VerticalAlignment="Center"/>
+                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
+                    <TextBox x:Name="TimeoutBox" Padding="4" Width="80"
+                             VerticalContentAlignment="Center"/>
+                    <TextBlock Text=" seconds" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
+        <!-- Behavior -->
+        <GroupBox Grid.Row="3" Header="Behavior" Padding="8" Margin="0,0,0,8">
+            <CheckBox x:Name="ConfirmCloseCheck"
+                      Content="Confirm before closing with active connections"/>
+        </GroupBox>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Save" Padding="12,6" Margin="0,0,6,0"
+                    IsDefault="True" Click="Save_Click"/>
+            <Button Content="Cancel" Padding="12,6" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
