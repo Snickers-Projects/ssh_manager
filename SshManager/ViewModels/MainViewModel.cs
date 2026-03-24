@@ -163,8 +163,21 @@ namespace SshManager.ViewModels
             session.LastConnectedDate = DateTime.Now;
             SaveSessions();
 
+            // Resolve ssh.exe full path to avoid PATH issues
+            // (Costura.Fody modifies PATH at runtime for native DLL extraction)
+            // Use sysnative to bypass WOW64 redirection when running as 32-bit process
+            var systemDir = System.IO.Path.Combine(
+                Environment.GetEnvironmentVariable("SystemRoot"), "System32");
+            if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
+                systemDir = System.IO.Path.Combine(
+                    Environment.GetEnvironmentVariable("SystemRoot"), "sysnative");
+
+            var sshExe = System.IO.Path.Combine(systemDir, "OpenSSH", "ssh.exe");
+            if (!System.IO.File.Exists(sshExe))
+                sshExe = "ssh.exe"; // fallback to PATH resolution
+
             // Build ssh command with arguments
-            var args = $"-NoExit -Command \"ssh {session.Username}@{session.Host} -p {session.Port}";
+            var args = $"-NoExit -Command \"& '{sshExe}' {session.Username}@{session.Host} -p {session.Port}";
             if (session.AuthMethod == AuthMethod.PrivateKey && !string.IsNullOrWhiteSpace(session.PrivateKeyPath))
             {
                 args += $" -i \\\"{session.PrivateKeyPath}\\\"";
